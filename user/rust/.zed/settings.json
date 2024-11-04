@@ -1,0 +1,35 @@
+{
+  "inlay_hints": {
+    "enabled": true,
+    "show_type_hints": true,
+    "show_parameter_hints": true,
+    "show_other_hints": true,
+    "edit_debounce_ms": 700,
+    "scroll_debounce_ms": 50
+  },
+  "lsp": {
+    "rust-analyzer": {
+      "initialization_options": {
+        "checkOnSave": {
+          "command": "clippy",
+          "allTargets": false
+        },
+        "cargo": {
+          "target": "riscv64gc-unknown-none-elf",
+          "allTargets": false
+        },
+        "check": {
+          "workspace": false
+        },
+        "diagnostics": {
+          "experimental": {
+            "enable": true
+          }
+        },
+        "server.extraEnv": {
+          "RUSTFLAGS": "-Ctarget-feature=+f,+d"
+        }
+      }
+    }
+  }
+}
