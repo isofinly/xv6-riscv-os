@@ -21,18 +21,27 @@ apt-get install -y \
     binutils-riscv64-unknown-elf \
     gdb-multiarch \
     qemu-system-misc \
-    \
     vim \
     tmux \
     git \
-    \
     clangd-18 \
     bear
 
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+# Install Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
 
-. $HOME/.cargo/env
+# Add Rust to PATH
+export PATH="/root/.cargo/bin:${PATH}"
+export CARGO_HOME="/root/.cargo"
 
+# Source the cargo environment
+. "/root/.cargo/env"
+
+# Add RISC-V target
 rustup target add riscv64gc-unknown-none-elf
 
 apt-get clean
+
+# Make sure Rust binaries are available system-wide
+echo 'export PATH="/root/.cargo/bin:${PATH}"' >> /etc/profile
+echo 'export CARGO_HOME="/root/.cargo"' >> /etc/profile
