@@ -22,11 +22,11 @@ jobs:
                   echo "Source branch: '$GITHUB_HEAD_REF'"
 
             - name: Build
-              run: docker run --rm -v ${{ github.workspace }}:/xv6 vityamand/xv6:latest sh -c "cd /xv6 && make && make fs.img && make qemu"
+              run: docker run --rm -v ${{ github.workspace }}:/xv6 vityamand/xv6:latest sh -c "cd /xv6 && make && make fs.img"
 
             - name: Test Lab 1
               if: ${{ github.head_ref == 'lab-1' }}
-              run: docker run --rm -v ${{ github.workspace }}:/xv6 vityamand/xv6:latest sh -c "cd /xv6 && sh ./ci/test/run.sh dumptests dump2tests usertests"
+              run: docker run --rm -v ${{ github.workspace }}:/xv6 vityamand/xv6:latest sh -c "cd /xv6 && make && sh ./ci/test/run.sh dumptests dump2tests usertests"
 
             - name: Test Lab 2
               if: ${{ github.head_ref == 'lab-2' }}
