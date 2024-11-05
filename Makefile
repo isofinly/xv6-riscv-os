@@ -85,6 +85,12 @@ $U/_ping: $U/rust/src/ping.rs $U/user.ld $(ULIB)
 	$(RUSTC) $(RUST_FLAGS) -o $U/rust/ping.o $< --emit=obj
 	$(LD) -T $U/user.ld -o $@ $U/rust/ping.o $(ULIB)
 
+UPROGS += $U/_main
+
+$U/_main: $U/rust/src/main.rs $U/user.ld $(ULIB)
+	$(RUSTC) $(RUST_FLAGS) -o $U/rust/main.o $< --emit=obj
+	$(LD) $(LDFLAGS) -N -e main -T $U/user.ld -o $@ $U/rust/main.o $U/ulib.o $U/usys.o $U/printf.o $U/umalloc.o
+
 CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb -gdwarf-2
 CFLAGS += -MD
 CFLAGS += -mcmodel=medany
@@ -96,6 +102,7 @@ CFLAGS += -fno-builtin-strchr -fno-builtin-exit -fno-builtin-malloc -fno-builtin
 CFLAGS += -fno-builtin-free
 CFLAGS += -fno-builtin-memcpy -Wno-main
 CFLAGS += -fno-builtin-printf -fno-builtin-fprintf -fno-builtin-vprintf
+CFLAGS += -fno-builtin-puts
 CFLAGS += -I.
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 
@@ -184,6 +191,7 @@ UPROGS=\
 	$U/_hello\
 	$U/_goal\
 	$U/_ping\
+	$U/_main
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

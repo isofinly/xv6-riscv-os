@@ -22,5 +22,5 @@ name = "goal"
 path = "src/goal.rs"
 
 [[bin]]
-name = "dump"
-path = "src/dump.rs"
+name = "main"
+path = "src/main.rs"
