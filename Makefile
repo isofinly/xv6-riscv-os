@@ -34,7 +34,7 @@ OBJS = \
 
 # riscv64-unknown-elf- or riscv64-linux-gnu-
 # perhaps in /opt/riscv/bin
-#TOOLPREFIX = 
+#TOOLPREFIX =
 
 # Try to infer the correct TOOLPREFIX if not set
 ifndef TOOLPREFIX
@@ -58,6 +58,39 @@ LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
+RUSTC = rustc
+RUST_TARGET = riscv64gc-unknown-none-elf
+RUST_FLAGS = -C target-feature=+m,+a,+f,+d -C target-cpu=generic-rv64 --target=$(RUST_TARGET) \
+             -C opt-level=2 -C debuginfo=2 -C link-arg=-nostartfiles -C link-arg=-static \
+             -C linker=riscv64-unknown-elf-gcc \
+             --edition=2021
+
+ULIB = $U/ulib.o $U/usys.o $U/printf.o $U/umalloc.o
+
+UPROGS += $U/_hello
+
+$U/_hello: $U/rust/src/hello.rs $U/user.ld $(ULIB)
+	$(RUSTC) $(RUST_FLAGS) -o $U/rust/hello.o $< --emit=obj
+	$(LD) -T $U/user.ld -o $@ $U/rust/hello.o $(ULIB)
+
+UPROGS += $U/_goal
+
+$U/_goal: $U/rust/src/goal.rs $U/user.ld $(ULIB)
+	$(RUSTC) $(RUST_FLAGS) -o $U/rust/goal.o $< --emit=obj
+	$(LD) -T $U/user.ld -o $@ $U/rust/goal.o $(ULIB)
+
+UPROGS += $U/_ping
+
+$U/_ping: $U/rust/src/ping.rs $U/user.ld $(ULIB)
+	$(RUSTC) $(RUST_FLAGS) -o $U/rust/ping.o $< --emit=obj
+	$(LD) -T $U/user.ld -o $@ $U/rust/ping.o $(ULIB)
+
+UPROGS += $U/_main
+
+$U/_main: $U/rust/src/main.rs $U/user.ld $(ULIB)
+	$(RUSTC) $(RUST_FLAGS) -o $U/rust/main.o $< --emit=obj
+	$(LD) $(LDFLAGS) -N -e main -T $U/user.ld -o $@ $U/rust/main.o $U/ulib.o $U/usys.o $U/printf.o $U/umalloc.o
+
 CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb -gdwarf-2
 CFLAGS += -MD
 CFLAGS += -mcmodel=medany
@@ -69,6 +102,7 @@ CFLAGS += -fno-builtin-strchr -fno-builtin-exit -fno-builtin-malloc -fno-builtin
 CFLAGS += -fno-builtin-free
 CFLAGS += -fno-builtin-memcpy -Wno-main
 CFLAGS += -fno-builtin-printf -fno-builtin-fprintf -fno-builtin-vprintf
+CFLAGS += -fno-builtin-puts
 CFLAGS += -I.
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 
@@ -83,7 +117,7 @@ endif
 LDFLAGS = -z max-page-size=4096
 
 $K/kernel: $(OBJS) $K/kernel.ld $U/initcode
-	$(LD) $(LDFLAGS) -T $K/kernel.ld -o $K/kernel $(OBJS) 
+	$(LD) $(LDFLAGS) -T $K/kernel.ld -o $K/kernel $(OBJS)
 	$(OBJDUMP) -S $K/kernel > $K/kernel.asm
 	$(OBJDUMP) -t $K/kernel | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $K/kernel.sym
 
@@ -95,8 +129,6 @@ $U/initcode: $U/initcode.S
 
 tags: $(OBJS) _init
 	etags *.S *.c
-
-ULIB = $U/ulib.o $U/usys.o $U/printf.o $U/umalloc.o
 
 _%: %.o $(ULIB)
 	$(LD) $(LDFLAGS) -T $U/user.ld -o $@ $^
@@ -156,13 +188,17 @@ UPROGS=\
 	$U/_alloctest\
 	$U/_cowtest\
 	$U/_lazytests\
+	$U/_hello\
+	$U/_goal\
+	$U/_ping\
+	$U/_main
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
 
 -include kernel/*.d user/*.d
 
-clean: 
+clean:
 	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
 	*/*.o */*.d */*.asm */*.sym \
 	$U/initcode $U/initcode.out $K/kernel fs.img \
@@ -194,4 +230,3 @@ qemu: $K/kernel fs.img
 qemu-gdb: $K/kernel .gdbinit fs.img
 	@echo "*** Now run 'gdb' in another window." 1>&2
 	$(QEMU) $(QEMUOPTS) -S $(QEMUGDB)
-
