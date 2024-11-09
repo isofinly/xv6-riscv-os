@@ -1,0 +1,15 @@
+[package]
+name = "xv6-rust"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "xv6_rust"
+path = "src/lib.rs"
+crate-type = ["staticlib"]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"

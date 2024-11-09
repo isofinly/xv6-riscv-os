@@ -1,0 +1,8 @@
+{
+    "rust-analyzer.checkOnSave.allTargets": false,
+    "rust-analyzer.checkOnSave.command": "check",
+    "rust-analyzer.cargo.target": "riscv64gc-unknown-none-elf",
+    "rust-analyzer.server.extraEnv": {
+        "RUSTFLAGS": "-Ctarget-feature=+f,+d"
+    }
+}

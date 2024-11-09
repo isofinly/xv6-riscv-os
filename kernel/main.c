@@ -6,6 +6,8 @@
 
 volatile static int started = 0;
 
+extern int rust_main(void);
+
 // start() jumps here in supervisor mode on all CPUs.
 void
 main()
@@ -13,6 +15,7 @@ main()
   if(cpuid() == 0){
     consoleinit();
     printfinit();
+    rust_main();
     printf("\n");
     printf("xv6 kernel is booting\n");
     printf("\n");

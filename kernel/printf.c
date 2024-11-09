@@ -176,3 +176,9 @@ printfinit(void)
   initlock(&pr.lock, "pr");
   pr.locking = 1;
 }
+
+void
+puts(const char *s)
+{
+  printf("%s", s);
+}
